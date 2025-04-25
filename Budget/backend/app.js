@@ -1,13 +1,16 @@
 const express = require('express');
 const cors = require('cors');
+const authRoutes = require('./routes/authRoutes');
+
 const app = express();
 
-// Example route to test if it's working
+app.use(cors());
+app.use(express.json()); // ✅ MUST be here before routes
+
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('🚀 Backend is running!');
 });
-
-app.use(cors());
-app.use(express.json());
 
 module.exports = app;
