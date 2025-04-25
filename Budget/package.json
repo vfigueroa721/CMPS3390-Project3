@@ -10,13 +10,20 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "expo": "~52.0.43",
     "expo-status-bar": "~2.0.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.2",
     "react": "18.3.1",
     "react-native": "0.76.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "nodemon": "^3.1.10"
   },
   "private": true
 }
