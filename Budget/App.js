@@ -1,11 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View,Button } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import Login from './Screens/Login';
-import NavBar from './Navigation/Navbar';
+import Login from './frontend/Screens/Login';
+import NavBar from './frontend/Navigation/Navbar';
 
 const Stack = createNativeStackNavigator();
 

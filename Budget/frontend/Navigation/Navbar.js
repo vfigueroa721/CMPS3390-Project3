@@ -1,6 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -19,6 +18,7 @@ export default function Navbar() {
         headerStyle: styles.header,
         tabBarStyle: styles.tabBar,
         tabBarIcon : ({ focused, color, size}) => {
+            // icons for navbar 
             let iconName;
             if(route.name === 'Home') {
                 iconName = focused ? 'home' : 'home-outline';
@@ -34,6 +34,7 @@ export default function Navbar() {
     })}
     
     >
+        {/* navbar links*/}
         <Tab.Screen name='Home' component={Home}></Tab.Screen>
         <Tab.Screen name='Goals' component={Goals} ></Tab.Screen>
         <Tab.Screen name='Calendar' component={Calendar} ></Tab.Screen>
@@ -42,15 +43,15 @@ export default function Navbar() {
     );
 }
 
-
+// styles 
 const styles = StyleSheet.create({
     header: {
-      backgroundColor: '#c8d9e5',
+        backgroundColor: '#c8d9e5',
     },
     tabBar: {
       tabBarActiveTintColor: '#1F7587',
       tabBarInactiveTintColor: 'black',
       backgroundColor: '#c8d9e6',
     },
-  });
+});
   
