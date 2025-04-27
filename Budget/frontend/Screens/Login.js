@@ -1,6 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
-
+import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
 
 export default function Login({navigation}) {
   return (
@@ -8,8 +7,13 @@ export default function Login({navigation}) {
         <View style={styles.loginContainer}>
             <Text style={styles.title}>Login</Text>
             <TextInput style={styles.input} placeholder='Email'></TextInput>
-            <TextInput style={styles.input} placeholder='Password'></TextInput>
-            <Button title='Log In' onPress={() => navigation.navigate('Home')}/> 
+            <TextInput style={styles.input} placeholder='Password'></TextInput> 
+            <TouchableOpacity 
+              style={styles.loginButton}
+              onPress={() => navigation.navigate('Home')}
+            >
+              <Text style={styles.loginText}>Log in</Text>
+            </TouchableOpacity>
         </View>
       <StatusBar style="auto" />
     </View>
@@ -33,6 +37,19 @@ const styles = StyleSheet.create({
   loginContainer: {
     backgroundColor: '#c8d9e6',
     borderRadius: 10,
+    alignItems: 'center',
+  },
+  loginButton: {
+    backgroundColor: 'rgba(64, 131, 180, 0.68)',
+    borderColor: 'black',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    width: '100%',
+    marginBottom: 20,
+  },
+  loginText: {
+    fontSize: 20,
   },
   input: {
     padding: 10,
