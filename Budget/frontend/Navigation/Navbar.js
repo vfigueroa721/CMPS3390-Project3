@@ -3,17 +3,17 @@ import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
-import Home from '../Screens/Home';
-import Goals from '../Screens/Goals';
-import Balance from '../Screens/Balance';
-import Calendar from '../Screens/Calendar';
+import Home from '../Views/Home';
+import Goals from '../Views/Goals';
+import Balance from '../Views/Balance';
+import Calendar from '../Views/Calendar';
 
 const Tab = createBottomTabNavigator();
 
 export default function Navbar() {
     return (
     <Tab.Navigator 
-    Views={({ route }) => ({
+    screenOptions={({ route }) => ({
         headerShown: true,
         headerStyle: styles.header,
         tabBarStyle: styles.tabBar,
