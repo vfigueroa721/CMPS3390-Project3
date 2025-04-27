@@ -26,36 +26,54 @@ export default function Goals() {
             <Text style={styles.goalText}>Vacation</Text>
             <Text style={styles.goalAmountText}>Goal: $1,000.00</Text>
             <Text style={styles.goalSavedText}>Saved: $500.00</Text>
-            <TextInput style={styles.input} 
+            <View style={styles.progressBarContainer}>
+              <View style={styles.progressBar}>
+              </View>
+            </View>
+            <View style={styles.inputRow}>
+            <TextInput 
+              style={styles.input} 
               placeholder='Amount to add'
               value=''
-              
             />
             <TouchableOpacity style={styles.addButton}>
               <Text style={styles.add}>Add</Text>
             </TouchableOpacity>
           </View>
         </View>
+        </View>
         <View style={styles.goalContainer}>
           <View style={styles.goalCard}>
             <Text style={styles.goalText}>New Car</Text>
-            <Text style={styles.goalAmountText}>$3,000.00</Text>
-            <Text style={styles.goalSavedText}>$1,000.00</Text>
-            <TextInput style={styles.input} 
+            <Text style={styles.goalAmountText}>Goal: $3,000.00</Text>
+            <Text style={styles.goalSavedText}>Saved: $1,000.00</Text>
+            <View style={styles.inputRow}>
+            <TextInput 
+              style={styles.input} 
               placeholder='Amount to add'
               value=''
             />
+            <TouchableOpacity style={styles.addButton}>
+              <Text style={styles.add}>Add</Text>
+            </TouchableOpacity>
+          </View>
           </View>
         </View>
         <View style={styles.goalContainer}>
           <View style={styles.goalCard}>
             <Text style={styles.goalText}>House</Text>
-            <Text style={styles.goalAmountText}>$10,000.00</Text>
-            <Text style={styles.goalSavedText}>$5,0000.00</Text>
-            <TextInput style={styles.input} 
+            <Text style={styles.goalAmountText}>Goal: $10,000.00</Text>
+            <Text style={styles.goalSavedText}>Saved: $5,0000.00</Text>
+            <View style={styles.inputRow}>
+            <TextInput 
+              style={styles.input} 
               placeholder='Amount to add'
               value=''
             />
+            <TouchableOpacity style={styles.addButton}>
+              <Text style={styles.add}>Add</Text>
+            </TouchableOpacity>
+          </View>
           </View>
         </View>
       </ScrollView>
@@ -78,11 +96,9 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   inputColumn: {
-    flexDirection: 'column',
     gap: 10,
     alignItems: 'center',
     width: '100%',
-    marginBottom: 20,
   },
   input: {
     flex: 1,
@@ -91,7 +107,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     width: 200,
-
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
   },
   addGoalButton: {
     backgroundColor: 'rgba(64, 131, 180, 0.68)',
@@ -138,5 +158,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 10,
     width: 50,
+    marginLeft: 10,
+    alignItems: 'center',
+  },
+  progressBarContainer: {
+    height: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    width: '50%',
+    backgroundColor: 'rgba(64, 131, 180, 0.68)',
   },
 });
