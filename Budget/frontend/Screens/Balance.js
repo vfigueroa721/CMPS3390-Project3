@@ -33,26 +33,36 @@ export default function Balance() {
             <Text style={styles.addedText}>
               Money added for this bill: $0.00
             </Text>
+            <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
               placeholder='Enter an amount to add'
               keyboardType='numeric'
             />
+            <TouchableOpacity style={styles.addButton}>              
+              <Text style={styles.add}>Add</Text>
+            </TouchableOpacity>
+            </View>
           </View>
         </View>
         <View style={styles.billContainer}>
           <View style={styles.billCard}>
             <Text style={styles.billText}>
-              Car Payment: $450.00
+              Car Payment: $50.00
             </Text>
             <Text style={styles.addedText}>
               Money added for this bill: $0.00
             </Text>
+            <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
               placeholder='Enter an amount to add'
               keyboardType='numeric'
             />
+            <TouchableOpacity style={styles.addButton}>              
+              <Text style={styles.add}>Add</Text>
+            </TouchableOpacity>
+            </View>
           </View>
         </View>
         <View style={styles.billContainer}>
@@ -63,26 +73,16 @@ export default function Balance() {
             <Text style={styles.addedText}>
               Money added for this bill: $0.00
             </Text>
+            <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
               placeholder='Enter an amount to add'
               keyboardType='numeric'
             />
-          </View>
-        </View>
-        <View style={styles.billContainer}>
-          <View style={styles.billCard}>
-            <Text style={styles.billText}>
-              Groceries: $150.00
-            </Text>
-            <Text style={styles.addedText}>
-              Money added for this bill: $0.00
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder='Enter an amount to add'
-              keyboardType='numeric'
-            />
+            <TouchableOpacity style={styles.addButton}>              
+              <Text style={styles.add}>Add</Text>
+            </TouchableOpacity>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -110,16 +110,21 @@ const styles = StyleSheet.create({
   },
   addedText: {
     fontSize: 15,
+    flex: 1,
   },
   header: {
     fontSize: 18,
     fontWeight: 'bold',
   },
   inputColumn: {
-    flexDirection: 'column',
     gap: 10,
     alignItems: 'center',
     width: '100%',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
   },
   input: {
     flex: 1,
@@ -136,6 +141,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 10,
     width: 70,
+  },
+  addButton: {
+    backgroundColor: 'rgba(64, 131, 180, 0.68)',
+    borderColor: 'black',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    width: 50,
+    marginLeft: 10,
+    alignItems: 'center',
   },
   scrollContainer: {
     marginTop: 10,

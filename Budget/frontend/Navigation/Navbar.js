@@ -13,7 +13,7 @@ const Tab = createBottomTabNavigator();
 export default function Navbar() {
     return (
     <Tab.Navigator 
-    screenOptions={({ route }) => ({
+    Views={({ route }) => ({
         headerShown: true,
         headerStyle: styles.header,
         tabBarStyle: styles.tabBar,
