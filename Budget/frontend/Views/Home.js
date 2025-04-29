@@ -6,8 +6,7 @@ import { Animated, Easing } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 export default function Home() {
-  const piggyX = useRef(new Animated.Value(0)).current;
-  const piggyY = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const [message, setMessage] = useState('');
 
   const motivationalQuotes = [
@@ -24,23 +23,29 @@ export default function Home() {
     setMessage(motivationalQuotes[randomIndex]);
   };
 
-  const movePiggy = () => {
-    // Animate the piggy to a random position
-    Animated.parallel([
-      Animated.timing(piggyX, {
-        toValue: Math.random() * (width - 160), // Random X position
-        duration: 2000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(piggyY, {
-        toValue: Math.random() * (height - 300), // Random Y position
-        duration: 2000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    ]).start();
+  const startBouncing = () => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.2,
+          duration: 500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   };
+
+  useEffect(() => {
+    startBouncing();
+    generateMessage();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -51,14 +56,9 @@ export default function Home() {
         style={[
           styles.piggyImage,
           {
-            transform: [
-              { translateX: piggyX },
-              { translateY: piggyY },
-            ],
+            transform: [{ scale: scaleAnim }],
           },
         ]}
-        // Trigger movePiggy when the piggy is pressed
-        onPress={movePiggy}
       />
 
       <Text style={styles.welcome}>Welcome back!</Text>
@@ -76,7 +76,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffc0cb',
+    backgroundColor: '#d3d3d3',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   piggyImage: {
     width: 160,
     height: 160,
-    position: 'absolute',
+    marginBottom: 20,
   },
   welcome: {
     fontSize: 24,
@@ -119,4 +119,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
