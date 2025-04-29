@@ -1,16 +1,22 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
+const goalRoutes = require('./routes/goalRoutes');
 
 const app = express();
 
 app.use(cors());
-app.use(express.json()); // ✅ MUST be here before routes
+app.use(express.json()); 
 
 app.use('/api/auth', authRoutes);
+app.use('/api/goals', goalRoutes);
 
-app.get('/', (req, res) => {
-  res.send('🚀 Backend is running!');
+//app.get('/', (req, res) => {
+  //res.send('🚀 Backend is running!');
+//});
+app.get('/api/ping', (req, res) => {
+  res.status(200).json({ message: '✅ Backend is alive!' });
 });
+
 
 module.exports = app;

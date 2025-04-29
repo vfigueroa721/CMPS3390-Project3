@@ -4,24 +4,33 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.signup = async (req, res) => {
-  console.log("🛬 Signup route hit!");
-  console.log("📥 Request body:", req.body);
+  const { firstName, email, password } = req.body;
 
-  const { email, password } = req.body;
+  if (!firstName || !email || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
 
   try {
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) return res.status(400).json({ error: 'Email already registered' });
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ email: email.toLowerCase(), password: hashed });
+    const user = await User.create({ firstName, email: email.toLowerCase(), password: hashed });
 
-    res.status(201).json({ message: 'User registered', userId: user._id });
+   
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(201).json({
+      message: 'User registered',
+      userId: user._id,
+      firstName: user.firstName, 
+      token, 
+    });
   } catch (err) {
-    console.error("❌ Signup error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 exports.login = async (req, res) => {
