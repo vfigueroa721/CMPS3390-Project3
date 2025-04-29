@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9F6EE',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 5,
     padding: 10,
     width: 200,
   },
