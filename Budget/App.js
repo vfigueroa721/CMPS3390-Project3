@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import Login from './frontend/Views/Login';
 import NavBar from './frontend/Navigation/Navbar';
+import SignUp from './frontend/Views/Signup';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,7 @@ export default function App() {
       <Stack.Navigator initialRouteName='Login'>
         <Stack.Screen name='Login' component={Login}></Stack.Screen>
         <Stack.Screen name='Home' component={NavBar} options={{headerShown:false}}></Stack.Screen>
+        <Stack.Screen name='SignUp' component={SignUp}></Stack.Screen>
       </Stack.Navigator>
       <StatusBar style='auto'></StatusBar>
     </NavigationContainer>

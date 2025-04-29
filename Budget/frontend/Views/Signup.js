@@ -1,12 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator,Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
-import SignUp from './Signup';
 
-export default function Login({ navigation }) {
+export default function SignUp({ navigation }) {
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleSignUp = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -16,23 +15,21 @@ export default function Login({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.loginContainer}>
-        <Text style={styles.title}>Login</Text>
+      <View style={styles.signUpContainer}>
+        <Text style={styles.title}>Create an Account</Text>
         <TextInput style={styles.input} placeholder="Email" />
         <TextInput style={styles.input} placeholder="Password" secureTextEntry />
+
         <TouchableOpacity
-          style={styles.loginButton}
-          onPress={handleLogin}
+          style={styles.signUpButton}
+          onPress={handleSignUp}
           disabled={loading} 
         >
-          <Text style={styles.loginText}>
-            {loading ? 'Fetching your piggy bank...' : 'Log in'}
+          <Text style={styles.signUpText}>
+            {loading ? 'Creating your piggy bank...' : 'create account'}
           </Text>
         </TouchableOpacity>
-        <Button 
-          onPress={() => navigation.navigate('SignUp')}
-          title="Create an Account"
-          />
+
         {loading && (
           <ActivityIndicator size="small" color="#000" style={{ marginTop: 10 }} />
         )}
@@ -51,19 +48,19 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    fontSize: 40,
+    fontSize: 30,
     fontWeight: 'bold',
     marginTop: 24,
     marginBottom: 24,
   },
-  loginContainer: {
+  signUpContainer: {
     backgroundColor: '#c8d9e6',
     borderRadius: 10,
     alignItems: 'center',
     paddingVertical: 20,
     paddingHorizontal: 10,
   },
-  loginButton: {
+  signUpButton: {
     backgroundColor: 'rgba(64, 131, 180, 0.68)',
     borderColor: 'black',
     paddingVertical: 5,
@@ -73,7 +70,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
   },
-  loginText: {
+  signUpText: {
     fontSize: 20,
   },
   input: {
