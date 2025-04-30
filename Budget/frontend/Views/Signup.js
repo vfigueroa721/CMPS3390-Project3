@@ -1,18 +1,37 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Button, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert, ImageBackground} from 'react-native';
 import React, { useState } from 'react';
-import Login from './Login';
 import Svg, { Path } from 'react-native-svg';
+import { signupUser } from '../api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function SignUp({ navigation }) {
+export default function SignupScreen({ navigation }) {
+  const [firstName, setFirstName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSignUp = () => {
+  const handleSignup = async () => {
+    if (!firstName || !email || !password) {
+      Alert.alert('Please fill out all fields');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const data = await signupUser(firstName, email, password);
+      console.log('Signup response:', data);
+
+      await AsyncStorage.setItem('token', data.token);
+      await AsyncStorage.setItem('userId', data.userId);
+      Alert.alert('Signup successful');
+      navigation.navigate('Home'); 
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+      Alert.alert('Signup failed', error.response?.data?.error || 'Unknown error');
+    } finally {
       setLoading(false);
-      navigation.navigate('Home');
-    }, 1000); 
+    }
   };
 
   return (
@@ -34,29 +53,45 @@ export default function SignUp({ navigation }) {
         
       <View style={styles.signUpContainer}>
         <Text style={styles.title}>Create account</Text>
-        <TextInput style={styles.input} placeholder='Name' />
-        <TextInput style={styles.input} placeholder="Email" />
-        <TextInput style={styles.input} placeholder="Password" secureTextEntry />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Name"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
         <TouchableOpacity
           style={styles.signUpButton}
-          onPress={handleSignUp}
-          disabled={loading} 
+          onPress={handleSignup}
+          disabled={loading}
         >
           <Text style={styles.signUpText}>
             {loading ? 'Creating your piggy bank...' : 'Create account'}
           </Text>
         </TouchableOpacity>
-        <Text>Already have an account?</Text>
+        <Text style={styles.text}>Already have an account?</Text>
         <TouchableOpacity
-            onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate('Login')}
         >
-            <Text style={styles.loginButton}>Login</Text>
+          <Text style={styles.loginButton}>Login</Text>
         </TouchableOpacity>
-        
-        {loading && (
-          <ActivityIndicator size="small" color="#000" style={{ marginTop: 10 }} />
-        )}
+
+        {loading && <ActivityIndicator size="small" color="#000" style={{ marginTop: 10 }} />}
       </View>
       <StatusBar style="auto" />
     </View>
@@ -66,8 +101,8 @@ export default function SignUp({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
+    flex: 1, 
+    alignItems: 'center', 
     justifyContent: 'center',
   },
   image: {
@@ -86,16 +121,17 @@ const styles = StyleSheet.create({
     color: 'rgba(44, 111, 160, 0.95)',
   },
   signUpContainer: {
-    marginTop: 450,
-    borderRadius: 10,
+    borderRadius: 10, 
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 20, 
     paddingHorizontal: 10,
+    marginTop: 450,
   },
   signUpButton: {
     backgroundColor: 'rgba(64, 131, 180, 0.68)',
+    borderColor: 'black',
     paddingVertical: 4,
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
     borderRadius: 10,
     width: '100%',
     marginTop: 10,
@@ -104,9 +140,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(64, 131, 180, 0.68)',
   },
-  signUpText: {
-    fontSize: 17,
-  },
+  signUpText: { fontSize: 18 },
   input: {
     padding: 10,
     height: 48,
@@ -121,10 +155,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '700%',
-    height: '132%',
+    height: '135%',
     zIndex: 0,
     borderWidth: 0,
     borderColor: 'rgba(64, 131, 180, 0.68)',
+  },
+  text: {
+    marginTop: 10,
   },
   loginButton: {
     color: 'blue',

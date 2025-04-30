@@ -2,16 +2,39 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator,Button, ImageBackground } from 'react-native';
 import React, { useState } from 'react';
 import Svg, { Path } from 'react-native-svg';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = 'http://localhost:5000/api'; 
 
 export default function Login({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const { token, userId } = response.data;
+
+      // Save token and userId for future use
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('userId', userId);
+
+      Alert.alert('Welcome back!');
+      navigation.navigate('Home'); 
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      Alert.alert('Login Failed', err.response?.data?.error || 'Invalid credentials');
+    } finally {
       setLoading(false);
-      navigation.navigate('Home');
-    }, 1000); 
+    }
   };
 
   return (
@@ -66,6 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    headerShown: false,
   },
   title: {
     textAlign: 'center',
