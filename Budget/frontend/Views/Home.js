@@ -1,11 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Animated, Easing } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function Home() {
+  const navigation = useNavigation();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [message, setMessage] = useState('');
 
@@ -42,6 +44,12 @@ export default function Home() {
     ).start();
   };
 
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('userId');
+    navigation.replace('Login'); // Replace stack so back can't go to Home
+  };
+
   useEffect(() => {
     startBouncing();
     generateMessage();
@@ -66,6 +74,10 @@ export default function Home() {
 
       <TouchableOpacity onPress={generateMessage} style={styles.newMessageButton}>
         <Text style={styles.buttonText}>Get New Motivation</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+        <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
 
       <StatusBar style="auto" />
@@ -115,6 +127,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    marginTop: 20,
+    backgroundColor: '#c1121f',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  logoutText: {
     color: 'white',
     fontWeight: 'bold',
   },

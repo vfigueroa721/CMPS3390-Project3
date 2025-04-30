@@ -11,9 +11,9 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/goals', goalRoutes);
 
-//app.get('/', (req, res) => {
-  //res.send('🚀 Backend is running!');
-//});
+app.get('/', (req, res) => {
+  res.send('🚀 Backend is running!');
+});
 app.get('/api/ping', (req, res) => {
   res.status(200).json({ message: '✅ Backend is alive!' });
 });
