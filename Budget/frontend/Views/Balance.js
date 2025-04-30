@@ -14,7 +14,6 @@ export default function Balance() {
         <TextInput
           style={styles.input}
           placeholder='Enter bill amount'
-          keyboardType='numeric'
         />
         <TouchableOpacity
           style={styles.addBillButton}
