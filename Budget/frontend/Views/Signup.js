@@ -24,6 +24,8 @@ export default function SignupScreen({ navigation }) {
 
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('userId', data.userId);
+      await AsyncStorage.setItem('firstName', data.firstName); 
+      await AsyncStorage.setItem('email', data.email); 
       Alert.alert('Signup successful');
       navigation.navigate('Home'); 
     } catch (error) {

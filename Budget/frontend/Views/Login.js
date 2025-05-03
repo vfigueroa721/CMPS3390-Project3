@@ -5,7 +5,7 @@ import Svg, { Path } from 'react-native-svg';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.1.33:5000/api'; // use your local network IP
+const API_URL = 'http://172.20.10.2:8081/api'; 
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -33,6 +33,18 @@ export default function Login({ navigation }) {
       Alert.alert('Login Failed', err.response?.data?.error || 'Invalid credentials');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const bypassLogin = async() => {
+    try {
+      await AsyncStorage.setItem('token', 'temporaryToken');
+      await AsyncStorage.setItem('userId', '12345');
+      Alert.alert('Bypassed login');
+      navigation.navigate('Home');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to save fake login');
+      console.error(err);
     }
   };
 
@@ -88,6 +100,12 @@ export default function Login({ navigation }) {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity 
+            style={[styles.loginButton, {backgroundColor: 'white'}]}
+            onPress={bypassLogin} 
+            >
+            <Text style={styles.loginText}>Bypass</Text>
+            </TouchableOpacity>
           <Text style={styles.createAccountText}>Don't have an account?</Text>
           <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.createAccountButton}>Create an Account</Text>
@@ -101,8 +119,8 @@ export default function Login({ navigation }) {
         <StatusBar style="auto" />
       </View>
       </KeyboardAvoidingView>
-  </TouchableWithoutFeedback>
-    </ImageBackground>
+     </TouchableWithoutFeedback>
+     </ImageBackground>
   );
 }
 
