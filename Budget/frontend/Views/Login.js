@@ -5,7 +5,7 @@ import Svg, { Path } from 'react-native-svg';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://172.20.10.2:8081/api'; 
+const API_URL = 'http://192.168.1.33:5000/api'; 
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
