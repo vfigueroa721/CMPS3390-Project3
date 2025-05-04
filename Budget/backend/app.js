@@ -17,6 +17,9 @@ app.get('/', (req, res) => {
 app.get('/api/ping', (req, res) => {
   res.status(200).json({ message: '✅ Backend is alive!' });
 });
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working!' });
+});
 
 
 module.exports = app;

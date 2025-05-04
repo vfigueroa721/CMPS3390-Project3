@@ -5,8 +5,8 @@ import Svg, { Path } from 'react-native-svg';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-//const API_URL = 'http://192.168.1.33:5000/api'; // IP HP laptop
-const API_URL = 'http://172.20.10.3:5000/api';// change ip this one is hotspot 
+const API_URL = 'http://192.168.1.33:5000/api'; // IP HP laptop
+//const API_URL = 'http://172.20.10.3:5000/api';// change ip this one is hotspot 
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
