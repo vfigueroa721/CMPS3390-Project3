@@ -37,6 +37,18 @@ export default function Login({ navigation }) {
     }
   };
 
+  const bypassLogin = async() => {
+    try {
+      await AsyncStorage.setItem('token', 'temporaryToken');
+      await AsyncStorage.setItem('userId', '12345');
+      Alert.alert('Bypassed login');
+      navigation.navigate('Home');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to save fake login');
+      console.error(err);
+    }
+  };
+
   return (
     <ImageBackground
       source={require('../../assets/background.jpg')}
@@ -89,6 +101,12 @@ export default function Login({ navigation }) {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity 
+            style={[styles.loginButton, {backgroundColor: 'white'}]}
+            onPress={bypassLogin} 
+            >
+            <Text style={styles.loginText}>Bypass</Text>
+            </TouchableOpacity>
           <Text style={styles.createAccountText}>Don't have an account?</Text>
           <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.createAccountButton}>Create an Account</Text>
@@ -102,8 +120,8 @@ export default function Login({ navigation }) {
         <StatusBar style="auto" />
       </View>
       </KeyboardAvoidingView>
-  </TouchableWithoutFeedback>
-    </ImageBackground>
+     </TouchableWithoutFeedback>
+     </ImageBackground>
   );
 }
 
