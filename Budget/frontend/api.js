@@ -16,4 +16,17 @@ export const loginUser = async (email, password) => {
   const response = await axios.post(`${API_URL}/auth/login`, { email, password });
   return response.data;
 };
+export const updateGoalSavedAmount = async (goalId, amountToAdd, token) => {
+  const response = await axios.put(`${API_URL}/goals/save`, {
+    goalId,
+    amountToAdd
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    }
+  });
+
+  return response.data;
+};
+
 //api.js

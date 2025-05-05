@@ -1,24 +1,32 @@
 const Goal = require('../models/Goal');
+const User = require('../models/User');
 
+// controllers/goalController.js
 exports.createGoal = async (req, res) => {
   const { name, goalAmount } = req.body;
-  const userId = req.userId; // we'll get it from JWT later!
+  const userId = req.user?.userId;
+
+  if (!name || isNaN(goalAmount)) {
+    return res.status(400).json({ error: 'Name and valid goal amount are required' });
+  }
 
   try {
-    const goal = await Goal.create({
-      userId,
+    const newGoal = await Goal.create({
       name,
       goalAmount,
-      savedAmount: 0,
+      userId, // ✅ include userId here
     });
-    res.status(201).json(goal);
+
+    res.status(201).json(newGoal);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+
 exports.getGoals = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user?.userId;
+
 
   try {
     const goals = await Goal.find({ userId });
@@ -29,18 +37,39 @@ exports.getGoals = async (req, res) => {
 };
 
 exports.updateSavedAmount = async (req, res) => {
-  const { goalId, amountToAdd } = req.body;
-  const userId = req.userId;
+  const { goalId, amount } = req.body;
+  const userId = req.user?.userId;
+
+  if (!goalId || isNaN(amount)) {
+    return res.status(400).json({ error: 'Goal ID and valid amount required' });
+  }
 
   try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (user.balance < amount) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
+
     const goal = await Goal.findOne({ _id: goalId, userId });
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
 
-    goal.savedAmount += amountToAdd;
+    const newSaved = Math.min(goal.saved + amount, goal.goalAmount);
+    goal.saved = newSaved;
     await goal.save();
 
-    res.json(goal);
+    user.balance -= amount;
+    await user.save();
+
+    res.json({
+      message: 'Progress updated',
+      saved: goal.saved,
+      balance: user.balance
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+
