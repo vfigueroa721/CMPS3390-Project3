@@ -4,6 +4,7 @@ import {
   StyleSheet, ScrollView, Alert
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import {format, parseISO} from 'date-fns';
 import axios from 'axios';
 
 const API_URL = 'http://192.168.1.33:5000/api/events'; // Replace with your IP for mobile testing
@@ -90,6 +91,38 @@ export default function CustomCalendar() {
   return (
     <View style={styles.container}>
       <Calendar
+        style={{
+          borderWidth: 2,
+          borderRadius: 10,
+          borderColor: 'rgb(64, 132, 180)',
+          height: 360
+        }}
+        
+        theme={{
+          backgroundColor: '#F9F6EE',
+          calendarBackground: '#e2f0f7',
+          textSectionTitleColor: 'rgb(94, 100, 107)',
+          textSectionTitleDisabledColor: ' #d9e1e8',
+          selectedDayBackgroundColor: '#00adf5',
+          selectedDayTextColor: '#ffffff',
+          todayTextColor: '#00adf5',
+          dayTextColor: 'rgba(19, 11, 11, 0.94)',
+          textDisabledColor: 'rgba(141, 150, 157, 0.49)',
+          dotColor: '#00adf5',
+          selectedDotColor: '#087ca7',
+          arrowColor: 'rgb(47, 109, 154)',
+          monthTextColor: 'black',
+          textDayFontFamily: 'monospace',
+          textMonthFontFamily: 'monospace',
+          textDayHeaderFontFamily: 'monospace',
+          textDayFontWeight: '300',
+          textMonthFontWeight: 'bold',
+          textDayHeaderFontWeight: '300',
+          textDayFontSize: 16,
+          textMonthFontSize: 16,
+          textDayHeaderFontSize: 14
+        }}
+        
         onDayPress={handleDayPress}
         markedDates={markedDates}
       />
@@ -101,7 +134,9 @@ export default function CustomCalendar() {
         ) : (
           upcomingEvents.map((event) => (
             <View key={event._id} style={styles.eventItem}>
-              <Text>{event.date} - {event.name}: ${event.amount.toFixed(2)}</Text>
+              <Text>
+                {format(parseISO(event.date), 'MMMM d, yyyy')} - {event.name}: ${event.amount.toFixed(2)}
+              </Text>
               <TouchableOpacity onPress={() => handleDelete(event._id)}>
                 <Text style={styles.deleteText}>Delete</Text>
               </TouchableOpacity>
@@ -118,7 +153,10 @@ export default function CustomCalendar() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add Payment on {selectedDate}</Text>
+            <Text style={styles.modalTitle}> 
+              Add Payment on {selectedDate ? format(parseISO(selectedDate), 'MMMM d, yyyy') : ''}
+            </Text>
+
             <TextInput
               style={styles.input}
               placeholder="Bill Name"
@@ -219,3 +257,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
