@@ -152,6 +152,7 @@ export default function Goals() {
               placeholder='Goal Name'
               value={newGoalName}
               onChangeText={setNewGoalName}
+              placeholderTextColor="#ccc"
             />
             <TextInput
               style={styles.input}
@@ -159,6 +160,7 @@ export default function Goals() {
               value={newGoalAmount}
               onChangeText={setNewGoalAmount}
               keyboardType='numeric'
+              placeholderTextColor="#ccc"
             />
             <TouchableOpacity style={styles.addGoalButton} onPress={handleAddGoal}>
               <Text style={styles.addGoal}>Save Goal</Text>
@@ -176,26 +178,127 @@ export default function Goals() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 40 },
-  balanceText: { fontSize: 30, fontWeight: 'bold', marginBottom: 18 },
-  addGoalButton: { backgroundColor: 'rgba(64, 131, 180, 0.68)', paddingVertical: 5, paddingHorizontal: 10, borderRadius: 10, width: 150, alignItems: 'center', marginVertical: 10 },
-  addGoal: { fontWeight: 'bold', color: '#fff' },
-  scrollContainer: { width: '100%', paddingHorizontal: 30, paddingVertical: 20 },
-  goalContainer: { marginBottom: 10 },
-  goalCard: { backgroundColor: '#c8d9e5', padding: 15, borderRadius: 8, width: '100%', gap: 10 },
-  goalText: { color: 'black', fontSize: 20, fontWeight: 'bold' },
-  goalAmountText: { fontSize: 15 },
-  goalSavedText: { fontSize: 15, color: 'blue' },
-  progressBarContainer: { height: 10, backgroundColor: '#e0e0e0', borderRadius: 5, marginBottom: 10, overflow: 'hidden' },
-  progressBar: { height: '100%', backgroundColor: 'rgba(64, 131, 180, 0.68)' },
-  input: { backgroundColor: '#F9F6EE', borderWidth: 1, borderRadius: 10, padding: 10, width: 200, marginTop: 10 },
-  inputSmall: { backgroundColor: '#F9f6ee', borderWidth: 1, borderRadius: 5, padding: 8, width: 100 },
-  inputRow: { flexDirection: 'row', alignItems: 'center' },
-  addButton: { backgroundColor: 'rgba(64, 131, 180, 0.68)', paddingVertical: 5, paddingHorizontal: 10, borderRadius: 10, marginLeft: 10, alignItems: 'center' },
-  add: { color: '#fff', fontWeight: 'bold' },
-  cancelButton: { marginTop: 10, color: 'red' },
-  noGoals: { fontSize: 16, color: 'gray' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center', width: '80%' },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+  container: { flex: 1, 
+    backgroundColor: '#fff', 
+    alignItems: 'center', 
+    justifyContent: 'flex-start', 
+    paddingTop: 40 
+  },
+  balanceText: { 
+    fontSize: 30, 
+    fontWeight: 'bold', 
+    marginBottom: 18 
+  },
+  addGoalButton: { 
+    backgroundColor: 'rgba(64, 131, 180, 0.68)', 
+    paddingVertical: 5, 
+    paddingHorizontal: 10, 
+    borderRadius: 10, 
+    width: 150, 
+    alignItems: 'center', 
+    marginVertical: 10 
+  },
+  addGoal: { 
+    fontWeight: 'bold', 
+    color: '#fff' 
+  },
+  scrollContainer: { 
+    width: '100%', 
+    paddingHorizontal: 30, 
+    paddingVertical: 20 
+  },
+  goalContainer: { 
+    marginBottom: 10 
+  },
+  goalCard: { 
+    backgroundColor: '#c8d9e5', 
+    padding: 15, 
+    borderRadius: 8, 
+    width: '100%', 
+    gap: 10 
+  },
+  goalText: { 
+    color: 'black', 
+    fontSize: 20, 
+    fontWeight: 'bold' 
+  },
+  goalAmountText: { 
+    fontSize: 15 
+  },
+  goalSavedText: { 
+    fontSize: 15, 
+    color: 'blue' 
+  },
+  progressBarContainer: { 
+    height: 10, 
+    backgroundColor: '#e0e0e0', 
+    borderRadius: 5, 
+    marginBottom: 10, 
+    overflow: 'hidden' 
+  },
+  progressBar: { 
+    height: '100%', 
+    backgroundColor: 'rgba(64, 131, 180, 0.68)' 
+  },
+  input: { 
+    backgroundColor: '#F9F6EE', 
+    borderWidth: 1, 
+    borderRadius: 10, 
+    padding: 10, 
+    width: 200, 
+    marginTop: 10 
+  },
+  inputSmall: { 
+    backgroundColor: '#F9f6ee', 
+    borderWidth: 1, 
+    borderRadius: 5, 
+    padding: 8, 
+    width: 100 
+  },
+  inputRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center' 
+  },
+  addButton: { 
+    backgroundColor: 'rgba(64, 131, 180, 0.68)', 
+    paddingVertical: 5, 
+    paddingHorizontal: 10, 
+    orderRadius: 10, 
+    marginLeft: 10, 
+    alignItems: 'center' 
+  },
+  add: { 
+    color: '#fff', 
+    fontWeight: 'bold' 
+  },
+  cancelButton: { 
+    marginTop: 10, 
+    color: 'red' 
+  },
+  noGoals: { 
+    fontSize: 16, 
+    color: 'gray' 
+  },
+  modalOverlay: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  modalContent: { 
+    backgroundColor: 'white', 
+    padding: 20, 
+    borderRadius: 10, 
+    alignItems: 'center', 
+    width: '80%' 
+  },
+  modalTitle: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    marginBottom: 10 
+  },
+  noGoals: {
+    fontSize: 16, 
+    color: 'gray'
+  }
 });
