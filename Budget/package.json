@@ -21,6 +21,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
     "expo": "^53.0.0",
+    "expo-linear-gradient": "~14.1.4",
     "expo-status-bar": "~2.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -29,6 +30,7 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
     "react-native-calendars": "^1.1311.1",
+    "react-native-confetti-cannon": "^1.5.2",
     "react-native-dotenv": "^3.4.11",
     "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0"

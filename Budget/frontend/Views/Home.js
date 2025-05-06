@@ -1,8 +1,21 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Animated, Easing, Image } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+  Animated,
+  Easing,
+  Image,
+  Platform,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
+
+const ConfettiCannon = Platform.OS !== 'web' ? require('react-native-confetti-cannon').default : () => null;
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,8 +23,13 @@ export default function Home() {
   const navigation = useNavigation();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [message, setMessage] = useState('');
-  const [showProfile, setShowProfile] = useState(false);
+  const [displayedText, setDisplayedText] = useState('');
   const [userInfo, setUserInfo] = useState({ name: '', email: '' });
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const [dailyBonusShown, setDailyBonusShown] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const progress = 65;
 
   const motivationalQuotes = [
     "Keep going, you're doing amazing!",
@@ -32,9 +50,36 @@ export default function Home() {
     "The more you save, the more you grow."
   ];
 
+  const financialTips = [
+    "Automate your savings every month.",
+    "Cut back on small daily expenses.",
+    "Use a budget tracking app (like this one!).",
+    "Review your subscriptions regularly.",
+    "Set SMART financial goals."
+  ];
+
+  const getTimeOfDayColors = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return ['#ffecd2', '#fcb69f'];
+    if (hour < 18) return ['#ffdde1', '#ee9ca7'];
+    return ['#d299c2', '#fef9d7'];
+  };
+
   const generateMessage = () => {
     const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
-    setMessage(motivationalQuotes[randomIndex]);
+    const quote = motivationalQuotes[randomIndex];
+    setMessage(quote);
+    setDisplayedText('');
+    animateText(quote);
+    setShowConfetti(true);
+  };
+
+  const animateText = (text) => {
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => text.slice(0, i++));
+      if (i > text.length) clearInterval(interval);
+    }, 40);
   };
 
   const startBouncing = () => {
@@ -56,31 +101,54 @@ export default function Home() {
     ).start();
   };
 
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('userId');
-    await AsyncStorage.removeItem('userName');
-    await AsyncStorage.removeItem('userEmail');
-    navigation.replace('Login'); 
+  const fetchUserData = async () => {
+    try {
+      const name = await AsyncStorage.getItem('userName');
+      const email = await AsyncStorage.getItem('userEmail');
+      setUserInfo({
+        name: name || 'Name',
+        email: email || 'Email',
+      });
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
   };
 
-  const fetchUserData = async () => {
-    const name = await AsyncStorage.getItem('userName');
-    const email = await AsyncStorage.getItem('userEmail');
-    setUserInfo({ name: name || 'Name', email: email || 'Email' });
+  const checkDailyBonus = async () => {
+    const today = new Date().toDateString();
+    const lastBonus = await AsyncStorage.getItem('lastBonusDate');
+    if (lastBonus !== today) {
+      await AsyncStorage.setItem('lastBonusDate', today);
+      setDailyBonusShown(true);
+      setTimeout(() => setDailyBonusShown(false), 5000);
+    }
+  };
+
+  const handlePiggyPress = async () => {
+    generateMessage();
+    setTapCount((prev) => {
+      const newCount = prev + 1;
+      AsyncStorage.setItem('tapScore', newCount.toString());
+      return newCount;
+    });
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.multiRemove(['token', 'userId', 'userName', 'userEmail']);
+    navigation.replace('Login');
   };
 
   useEffect(() => {
     startBouncing();
     generateMessage();
     fetchUserData();
+    checkDailyBonus();
   }, []);
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={getTimeOfDayColors()} style={styles.container}>
       <Text style={styles.title}>PiggyPocket</Text>
 
-      {}
       <View style={styles.profileContainer}>
         <TouchableOpacity onPress={() => setShowProfile(!showProfile)}>
           <Image
@@ -90,7 +158,6 @@ export default function Home() {
         </TouchableOpacity>
         {showProfile && (
           <View style={styles.profileDropdown}>
-            <Text style={styles.profileText}>Name: {userInfo.name}</Text>
             <Text style={styles.profileText}>Email: {userInfo.email}</Text>
             <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
               <Text style={styles.logoutText}>Logout</Text>
@@ -99,33 +166,59 @@ export default function Home() {
         )}
       </View>
 
-      <Animated.Image
-        source={require('../../assets/piggy.png')}
-        style={[
-          styles.piggyImage,
-          {
-            transform: [{ scale: scaleAnim }],
-          },
-        ]}
-      />
-
-      <Text style={styles.welcome}>Welcome back!</Text>
-      <Text style={styles.motivation}>{message}</Text>
-
-      <TouchableOpacity onPress={generateMessage} style={styles.newMessageButton}>
-        <Text style={styles.buttonText}>Get New Motivation</Text>
+      <TouchableOpacity onPress={handlePiggyPress}>
+        <Animated.Image
+          source={require('../../assets/piggy.png')}
+          style={[styles.piggyImage, { transform: [{ scale: scaleAnim }] }]}
+        />
       </TouchableOpacity>
 
+      <View style={styles.bubble}>
+        <Text style={styles.bubbleText}>"Keep saving, champ!"</Text>
+      </View>
+
+      <Text style={styles.welcome}>
+        Welcome back{userInfo.name ? `, ${userInfo.name.split(' ')[0]}!` : '!'}
+      </Text>
+
+      <Text style={styles.motivation}>{displayedText}</Text>
+
+      <Text style={styles.tip}>💡 Tip: {financialTips[Math.floor(Math.random() * financialTips.length)]}</Text>
+
+      <View style={styles.progressContainer}>
+        <Text style={styles.progressLabel}>Monthly Goal Progress</Text>
+        <View style={styles.progressBarBackground}>
+          <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+        </View>
+        <Text style={styles.progressText}>{progress}% saved</Text>
+      </View>
+
+      <Text style={styles.tapCounter}>🐷 Taps: {tapCount}</Text>
+
+      {dailyBonusShown && (
+        <View style={styles.bonusBox}>
+          <Text style={styles.bonusText}>🎁 Daily Bonus: +10 Savings Points!</Text>
+        </View>
+      )}
+
+      {showConfetti && Platform.OS !== 'web' && (
+        <ConfettiCannon
+          count={25}
+          origin={{ x: width / 2, y: height / 2 }}
+          fadeOut
+          fallSpeed={3000}
+          onAnimationEnd={() => setShowConfetti(false)}
+        />
+      )}
 
       <StatusBar style="auto" />
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -142,41 +235,73 @@ const styles = StyleSheet.create({
     height: 160,
     marginBottom: 20,
   },
+  bubble: {
+    backgroundColor: '#fff0f5',
+    padding: 8,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  bubbleText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#8b008b',
+  },
   welcome: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginTop: 20,
-    textAlign: 'center',
+    marginTop: 10,
   },
   motivation: {
     fontSize: 16,
     color: '#7a7a7a',
-    marginTop: 10,
-    marginBottom: 20,
+    marginVertical: 10,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
-  newMessageButton: {
-    backgroundColor: '#ff69b4',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginTop: 20,
+  tip: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#444',
+    marginBottom: 15,
+    textAlign: 'center',
   },
-  buttonText: {
-    color: 'white',
+  progressContainer: {
+    marginTop: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  progressLabel: {
     fontWeight: 'bold',
+    marginBottom: 4,
   },
-  logoutButton: {
-    marginTop: 20,
-    backgroundColor: '#c1121f',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+  progressBarBackground: {
+    width: '80%',
+    height: 10,
+    backgroundColor: '#ddd',
+    borderRadius: 10,
+    overflow: 'hidden',
   },
-  logoutText: {
-    color: 'white',
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#32cd32',
+  },
+  progressText: {
+    marginTop: 4,
+    fontSize: 12,
+  },
+  tapCounter: {
+    fontSize: 16,
+    marginTop: 10,
+  },
+  bonusBox: {
+    marginTop: 15,
+    backgroundColor: '#fffacd',
+    padding: 10,
+    borderRadius: 10,
+  },
+  bonusText: {
     fontWeight: 'bold',
+    color: '#d2691e',
   },
   profileContainer: {
     position: 'absolute',
@@ -203,5 +328,16 @@ const styles = StyleSheet.create({
   profileText: {
     fontSize: 14,
     marginBottom: 4,
+  },
+  logoutButton: {
+    marginTop: 10,
+    backgroundColor: '#c1121f',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });

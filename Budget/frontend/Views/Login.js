@@ -23,15 +23,26 @@ export default function Login({ navigation }) {
 
     setLoading(true);
     try {
+      console.log('Trying to log in with:', email, password);
+
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
       });
 
-      const { token, userId } = response.data;
+      const { token, userId, firstName, email: userEmail } = response.data;
+
+await AsyncStorage.setItem('token', token);
+await AsyncStorage.setItem('userId', userId);
+await AsyncStorage.setItem('userName', firstName);
+await AsyncStorage.setItem('userEmail', userEmail);
+
 
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('userId', userId);
+      await AsyncStorage.setItem('userName', firstName);    // from response.data.name
+await AsyncStorage.setItem('userEmail', email);  // from response.data.email
+
 
       Alert.alert('Welcome back!');
       navigation.navigate('Home');
@@ -44,6 +55,8 @@ export default function Login({ navigation }) {
     } finally {
       setLoading(false);
     }
+    console.log('Login response:', response.data);
+
   };
 
   const bypassLogin = async () => {
@@ -93,7 +106,7 @@ export default function Login({ navigation }) {
                 style={styles.input}
                 placeholder="Email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => setEmail(text)} // <-- THIS IS REQUIRED
                 autoCapitalize="none"
               />
 
