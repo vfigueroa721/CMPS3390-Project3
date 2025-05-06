@@ -4,6 +4,7 @@ const authRoutes = require('./routes/authRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const billRoutes = require('./routes/billRoutes');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/bills', billRoutes);
 
 app.get('/', (req, res) => {
   res.send('🚀 Backend is running!');

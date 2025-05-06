@@ -1,11 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, ScrollView, Modal, Alert,Platform, Keyboard } from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, ScrollView, Modal, Alert, Platform, Keyboard } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useIsFocused } from '@react-navigation/native';
 
-//const API_URL = 'http://136.168.86.24:5000/api/goals';//school
-const API_URL = 'http://192.168.1.33:5000/api/goals';
+
+const BASE_URL = 'http://192.168.1.33:5000';
+const API_URL = `${BASE_URL}/api/goals`;
 
 export default function Goals() {
   const [goals, setGoals] = useState([]);
@@ -14,18 +16,48 @@ export default function Goals() {
   const [newGoalAmount, setNewGoalAmount] = useState('');
   const [addAmounts, setAddAmounts] = useState({});
   const [balance, setBalance] = useState(0);
+  const isFocused = useIsFocused();
+
+  
+
+  const showAlert = (title, message) => {
+    if (Platform.OS === 'web') {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      import('react-native').then(({ Alert }) => Alert.alert(title, message));
+    }
+  };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isFocused) {
+      fetchUserBalance(); // keep balance up to date
+      fetchData();         // optional: re-fetch goals too
+    }
+  }, [isFocused]);
+  const fetchUserBalance = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.log('No token found. Redirecting...');
+        return;
+      }
+  
+      const res = await axios.get(`${BASE_URL}/api/user/balance`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBalance(res.data.balance);
+    } catch (err) {
+      console.error('Balance fetch failed:', err);
+    }
+  };
+  
 
   const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) return;
 
-      //const balanceRes = await axios.get('http://136.168.86.24:5000/api/user/balance', {//school
-        const balanceRes = await axios.get('http://192.168.1.33:5000/api/user/balance', {
+      const balanceRes = await axios.get(`${BASE_URL}/api/user/balance`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBalance(balanceRes.data.balance);
@@ -33,6 +65,7 @@ export default function Goals() {
       const goalsRes = await axios.get(API_URL, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const loadedGoals = goalsRes.data.map(goal => ({
         id: goal._id,
         name: goal.name,
@@ -45,11 +78,34 @@ export default function Goals() {
     }
   };
 
+  const syncBalanceToBackend = async (newBalance) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(`${BASE_URL}/api/user/balance`, {
+        balance: newBalance,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      // ✅ Immediately fetch updated balance from backend
+      const refreshed = await axios.get(`${BASE_URL}/api/user/balance`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      setBalance(parseFloat(refreshed.data.balance));
+    } catch (err) {
+      console.error('Balance sync failed:', err);
+      showAlert('Error', 'Failed to update balance');
+    }
+  };
+  
+  
+
   const handleAddGoal = async () => {
     if (!newGoalName || !newGoalAmount || isNaN(newGoalAmount)) return;
 
-    const token = await AsyncStorage.getItem('token');
     try {
+      const token = await AsyncStorage.getItem('token');
       const res = await axios.post(API_URL, {
         name: newGoalName,
         goalAmount: parseFloat(newGoalAmount),
@@ -75,8 +131,11 @@ export default function Goals() {
 
   const handleAddToSaved = async (goalId) => {
     const amountToAdd = parseFloat(addAmounts[goalId]);
-    if (isNaN(amountToAdd) || amountToAdd <= 0) return;
-
+    if (isNaN(amountToAdd) || amountToAdd <= 0 || amountToAdd > parseFloat(balance)) {
+      Alert.alert('Error', 'Enter a valid amount and ensure you have enough balance');
+      return;
+    }
+  
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await axios.put(`${API_URL}/save`, {
@@ -85,27 +144,34 @@ export default function Goals() {
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
+      // ✅ Update the saved amount locally
       const updatedGoals = goals.map(goal =>
         goal.id === goalId ? { ...goal, saved: res.data.saved } : goal
       );
       setGoals(updatedGoals);
-      setBalance(res.data.balance);
+  
+      // ✅ Subtract from balance and sync with backend (backend will re-set balance)
+      const newBalance = parseFloat(balance) - amountToAdd;
+      await syncBalanceToBackend(newBalance);
+  
+      // ✅ Clear input
       setAddAmounts({ ...addAmounts, [goalId]: '' });
     } catch (err) {
+      console.error('Add to Saved failed:', err);
       Alert.alert('Error', err.response?.data?.error || 'Could not update goal');
     }
   };
+  
 
-  const handleDeleteGoal = (goalId) => {
-    console.log('Delete button pressed for goal:', goalId);
+  const handleDeleteGoal = (goal) => {
     Keyboard.dismiss();
+  
+    const confirmDelete = () => runDelete(goal); // call the helper below
   
     if (Platform.OS === 'web') {
       const confirm = window.confirm('Are you sure you want to delete this goal? Saved money will be restored to your balance.');
-      if (confirm) {
-        runDelete(goalId); // helper below
-      }
+      if (confirm) confirmDelete();
     } else {
       setTimeout(() => {
         Alert.alert(
@@ -113,41 +179,29 @@ export default function Goals() {
           'Are you sure you want to delete this goal? Saved money will be restored to your balance.',
           [
             { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Delete',
-              style: 'destructive',
-              onPress: () => runDelete(goalId),
-            },
+            { text: 'Delete', style: 'destructive', onPress: confirmDelete },
           ]
         );
       }, 100);
     }
   };
   
-  const runDelete = async (goalId) => {
-    console.log('User confirmed deletion');
+  const runDelete = async (goal) => {
     try {
       const token = await AsyncStorage.getItem('token');
-      const res = await axios.delete(`${API_URL}/${goalId}`, {
+  
+      await axios.delete(`${API_URL}/${goal.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
   
-      console.log('Delete response:', res.data);
+      const restoredBalance = parseFloat(balance) + parseFloat(goal.saved);
+      await syncBalanceToBackend(restoredBalance); // ✅ sync balance safely
   
-      if (res.status === 200) {
-        setGoals(goals.filter(goal => goal.id !== goalId));
-        setBalance(res.data.updatedBalance);
-        if (Platform.OS !== 'web') {
-          Alert.alert('Success', res.data.message);
-        } else {
-          alert(res.data.message); // Fallback for web
-        }
-      } else {
-        alert('Could not delete goal');
-      }
+      setGoals(prevGoals => prevGoals.filter(g => g.id !== goal.id));
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.error || 'Server error');
+      console.error('Delete failed:', err);
+      Alert.alert('Error', 'Could not delete goal');
     }
   };
   
@@ -192,7 +246,7 @@ export default function Goals() {
                   </View>
                   <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => handleDeleteGoal(goal.id)}
+                    onPress={() => handleDeleteGoal(goal)}
                   >
                     <Text style={styles.deleteText}>Delete Goal</Text>
                   </TouchableOpacity>
@@ -203,12 +257,7 @@ export default function Goals() {
         )}
       </ScrollView>
 
-      <Modal
-        transparent={true}
-        visible={modalVisible}
-        animationType='slide'
-        onRequestClose={() => setModalVisible(false)}
-      >
+      <Modal transparent visible={modalVisible} animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Add New Goal</Text>
@@ -243,127 +292,53 @@ export default function Goals() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, 
-    backgroundColor: '#fff', 
-    alignItems: 'center', 
-    justifyContent: 'flex-start', 
-    paddingTop: 40 
+  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', paddingTop: 40 },
+  balanceText: { fontSize: 30, fontWeight: 'bold', marginBottom: 18 },
+  addGoalButton: {
+    backgroundColor: 'rgba(64, 131, 180, 0.68)',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    width: 150,
+    alignItems: 'center',
+    marginVertical: 10
   },
-  balanceText: { 
-    fontSize: 30, 
-    fontWeight: 'bold', 
-    marginBottom: 18 
+  addGoal: { fontWeight: 'bold', color: '#fff' },
+  scrollContainer: { width: '100%', paddingHorizontal: 30, paddingVertical: 20 },
+  goalContainer: { marginBottom: 10 },
+  goalCard: { backgroundColor: '#c8d9e5', padding: 15, borderRadius: 8, width: '100%', gap: 10 },
+  goalText: { color: 'black', fontSize: 20, fontWeight: 'bold' },
+  goalAmountText: { fontSize: 15 },
+  goalSavedText: { fontSize: 15, color: 'blue' },
+  progressBarContainer: {
+    height: 10, backgroundColor: '#e0e0e0', borderRadius: 5, marginBottom: 10, overflow: 'hidden'
   },
-  addGoalButton: { 
-    backgroundColor: 'rgba(64, 131, 180, 0.68)', 
-    paddingVertical: 5, 
-    paddingHorizontal: 10, 
-    borderRadius: 10, 
-    width: 150, 
-    alignItems: 'center', 
-    marginVertical: 10 
+  progressBar: { height: '100%', backgroundColor: 'rgba(64, 131, 180, 0.68)' },
+  input: {
+    backgroundColor: '#F9F6EE', borderWidth: 1, borderRadius: 10, padding: 10, width: 200, marginTop: 10
   },
-  addGoal: { 
-    fontWeight: 'bold', 
-    color: '#fff' 
+  inputSmall: {
+    backgroundColor: '#F9f6ee', borderWidth: 1, borderRadius: 5, padding: 8, width: 100
   },
-  scrollContainer: { 
-    width: '100%', 
-    paddingHorizontal: 30, 
-    paddingVertical: 20 
+  inputRow: { flexDirection: 'row', alignItems: 'center' },
+  addButton: {
+    backgroundColor: 'rgba(64, 131, 180, 0.68)',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginLeft: 10,
+    alignItems: 'center'
   },
-  goalContainer: { 
-    marginBottom: 10 
+  add: { color: '#fff', fontWeight: 'bold' },
+  deleteButton: { marginTop: 10 },
+  deleteText: { color: 'red', fontWeight: '600' },
+  cancelButton: { marginTop: 10, color: 'red' },
+  noGoals: { fontSize: 16, color: 'gray' },
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center'
   },
-  goalCard: { 
-    backgroundColor: '#c8d9e5', 
-    padding: 15, 
-    borderRadius: 8, 
-    width: '100%', 
-    gap: 10 
+  modalContent: {
+    backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center', width: '80%'
   },
-  goalText: { 
-    color: 'black', 
-    fontSize: 20, 
-    fontWeight: 'bold' 
-  },
-  goalAmountText: { 
-    fontSize: 15 
-  },
-  goalSavedText: { 
-    fontSize: 15, 
-    color: 'blue' 
-  },
-  progressBarContainer: { 
-    height: 10, 
-    backgroundColor: '#e0e0e0', 
-    borderRadius: 5, 
-    marginBottom: 10, 
-    overflow: 'hidden' 
-  },
-  progressBar: { 
-    height: '100%', 
-    backgroundColor: 'rgba(64, 131, 180, 0.68)' 
-  },
-  input: { 
-    backgroundColor: '#F9F6EE', 
-    borderWidth: 1, 
-    borderRadius: 10, 
-    padding: 10, 
-    width: 200, 
-    marginTop: 10 
-  },
-  inputSmall: { 
-    backgroundColor: '#F9f6ee', 
-    borderWidth: 1, 
-    borderRadius: 5, 
-    padding: 8, 
-    width: 100 
-  },
-  inputRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
-  },
-  addButton: { 
-    backgroundColor: 'rgba(64, 131, 180, 0.68)', 
-    paddingVertical: 5, 
-    paddingHorizontal: 10, 
-    orderRadius: 10, 
-    marginLeft: 10, 
-    alignItems: 'center' 
-  },
-  add: { 
-    color: '#fff', 
-    fontWeight: 'bold' 
-  },
-  cancelButton: { 
-    marginTop: 10, 
-    color: 'red' 
-  },
-  noGoals: { 
-    fontSize: 16, 
-    color: 'gray' 
-  },
-  modalOverlay: { 
-    flex: 1, 
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-    justifyContent: 'center', 
-    alignItems: 'center' 
-  },
-  modalContent: { 
-    backgroundColor: 'white', 
-    padding: 20, 
-    borderRadius: 10, 
-    alignItems: 'center', 
-    width: '80%' 
-  },
-  modalTitle: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    marginBottom: 10 
-  },
-  noGoals: {
-    fontSize: 16, 
-    color: 'gray'
-  }
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 }
 });
