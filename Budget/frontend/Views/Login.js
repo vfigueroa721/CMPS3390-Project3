@@ -6,6 +6,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = 'http://192.168.1.33:5000/api'; // IP HP laptop
+//const API_URL = 'http://136.168.86.24:5000/api';//school
+//const API_URL = 'http://localhost:5000/api'; // for iOS device
+
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');

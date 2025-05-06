@@ -1,9 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, ScrollView, Modal, Alert,Platform, Keyboard } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
+//const API_URL = 'http://136.168.86.24:5000/api/goals';//school
 const API_URL = 'http://192.168.1.33:5000/api/goals';
 
 export default function Goals() {
@@ -15,32 +16,34 @@ export default function Goals() {
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-
-        const balanceRes = await axios.get('http://192.168.1.33:5000/api/user/balance', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setBalance(balanceRes.data.balance);
-
-        const goalsRes = await axios.get(API_URL, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const loadedGoals = goalsRes.data.map(goal => ({
-          id: goal._id,
-          name: goal.name,
-          amount: goal.goalAmount,
-          saved: goal.saved || 0
-        }));
-        setGoals(loadedGoals);
-      } catch (err) {
-        console.error(err.response?.data || err.message);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return;
+
+      //const balanceRes = await axios.get('http://136.168.86.24:5000/api/user/balance', {//school
+        const balanceRes = await axios.get('http://192.168.1.33:5000/api/user/balance', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBalance(balanceRes.data.balance);
+
+      const goalsRes = await axios.get(API_URL, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const loadedGoals = goalsRes.data.map(goal => ({
+        id: goal._id,
+        name: goal.name,
+        amount: goal.goalAmount,
+        saved: goal.saved || 0,
+      }));
+      setGoals(loadedGoals);
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+    }
+  };
 
   const handleAddGoal = async () => {
     if (!newGoalName || !newGoalAmount || isNaN(newGoalAmount)) return;
@@ -59,7 +62,7 @@ export default function Goals() {
         id: savedGoal._id,
         name: savedGoal.name,
         amount: savedGoal.goalAmount,
-        saved: savedGoal.saved || 0
+        saved: savedGoal.saved || 0,
       }]);
 
       setNewGoalName('');
@@ -76,15 +79,16 @@ export default function Goals() {
 
     try {
       const token = await AsyncStorage.getItem('token');
-      const res = await axios.put('http://192.168.1.33:5000/api/goals/save', 
-        { goalId, amount: amountToAdd },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.put(`${API_URL}/save`, {
+        goalId,
+        amount: amountToAdd
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const updatedGoals = goals.map(goal =>
         goal.id === goalId ? { ...goal, saved: res.data.saved } : goal
       );
-
       setGoals(updatedGoals);
       setBalance(res.data.balance);
       setAddAmounts({ ...addAmounts, [goalId]: '' });
@@ -92,6 +96,61 @@ export default function Goals() {
       Alert.alert('Error', err.response?.data?.error || 'Could not update goal');
     }
   };
+
+  const handleDeleteGoal = (goalId) => {
+    console.log('Delete button pressed for goal:', goalId);
+    Keyboard.dismiss();
+  
+    if (Platform.OS === 'web') {
+      const confirm = window.confirm('Are you sure you want to delete this goal? Saved money will be restored to your balance.');
+      if (confirm) {
+        runDelete(goalId); // helper below
+      }
+    } else {
+      setTimeout(() => {
+        Alert.alert(
+          'Delete Goal',
+          'Are you sure you want to delete this goal? Saved money will be restored to your balance.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Delete',
+              style: 'destructive',
+              onPress: () => runDelete(goalId),
+            },
+          ]
+        );
+      }, 100);
+    }
+  };
+  
+  const runDelete = async (goalId) => {
+    console.log('User confirmed deletion');
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const res = await axios.delete(`${API_URL}/${goalId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      console.log('Delete response:', res.data);
+  
+      if (res.status === 200) {
+        setGoals(goals.filter(goal => goal.id !== goalId));
+        setBalance(res.data.updatedBalance);
+        if (Platform.OS !== 'web') {
+          Alert.alert('Success', res.data.message);
+        } else {
+          alert(res.data.message); // Fallback for web
+        }
+      } else {
+        alert('Could not delete goal');
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || 'Server error');
+    }
+  };
+  
 
   return (
     <View style={styles.container}>
@@ -131,6 +190,12 @@ export default function Goals() {
                       <Text style={styles.add}>Add</Text>
                     </TouchableOpacity>
                   </View>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteGoal(goal.id)}
+                  >
+                    <Text style={styles.deleteText}>Delete Goal</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             );

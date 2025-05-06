@@ -8,7 +8,8 @@ import {format, parseISO} from 'date-fns';
 import axios from 'axios';
 
 const API_URL = 'http://192.168.1.33:5000/api/events'; // Replace with your IP for mobile testing
-
+//const API_URL = 'http://172.20.10.3:5000/api';// change ip this one is hotspot 
+//const API_URL = 'http://136.168.86.24:5000/api/events';
 export default function CustomCalendar() {
   const [selectedDate, setSelectedDate] = useState('');
   const [events, setEvents] = useState([]);
